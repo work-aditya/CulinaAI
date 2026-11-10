@@ -1,12 +1,17 @@
-import React from 'react'
+import React, { useState } from 'react'
 import { Routes, Route } from 'react-router-dom'
 import { Navbar } from './components/Navbar'
 import { HomePage } from './pages/HomePage'
 import { FavoritesPage } from './pages/FavoritesPage'
 import { GroceryListPage } from './pages/GroceryListPage'
+import { AiChefAssistant } from './components/AiChefAssistant'
+import { RecipeDetailModal } from './components/RecipeDetailModal'
+import { Recipe } from './types'
 import { UtensilsCrossed, ShieldCheck, Heart } from 'lucide-react'
 
 export const App: React.FC = () => {
+  const [activeRecipe, setActiveRecipe] = useState<Recipe | null>(null)
+
   return (
     <div className="min-h-screen flex flex-col bg-[#FAF8F3] text-[#24251F]">
       <Navbar />
@@ -18,6 +23,15 @@ export const App: React.FC = () => {
           <Route path="/grocery-list" element={<GroceryListPage />} />
         </Routes>
       </div>
+
+      {/* Floating AI Sous Chef Assistant */}
+      <AiChefAssistant onSelectRecipe={(recipe) => setActiveRecipe(recipe)} />
+
+      {/* Global Recipe Detail Modal for AI Assistant Trigger */}
+      <RecipeDetailModal
+        recipe={activeRecipe}
+        onClose={() => setActiveRecipe(null)}
+      />
 
       {/* Editorial Footer */}
       <footer className="mt-auto border-t border-[#24251F]/8 bg-white/50 backdrop-blur-xs py-8">
@@ -45,4 +59,3 @@ export const App: React.FC = () => {
 }
 
 export default App
-
