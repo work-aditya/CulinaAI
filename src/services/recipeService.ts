@@ -1,6 +1,7 @@
 import { Recipe, DietaryFilters, SearchMode } from '../types'
 import { INITIAL_RECIPES } from '../data/mockRecipes'
 import { supabase, isSupabaseConfigured } from '../lib/supabase'
+import { parseNaturalLanguageQuery } from '../lib/nlp'
 
 export async function searchRecipes(
   query: string,
@@ -23,13 +24,16 @@ export async function searchRecipes(
   }
 
   // Client-side intelligent search simulation with accurate data
-  await new Promise((resolve) => setTimeout(resolve, 400)) // smooth simulated network latency
+  await new Promise((resolve) => setTimeout(resolve, 350)) // smooth simulated network latency
 
   let results = [...INITIAL_RECIPES]
 
   if (query.trim()) {
+    const intent = parseNaturalLanguageQuery(query)
     const q = query.toLowerCase()
+
     results = results.filter((r) => {
+      // 1. Direct text search
       const inTitle = r.title.toLowerCase().includes(q)
       const inSummary = r.summary?.toLowerCase().includes(q)
       const inDiets = r.diets.some((d) => d.toLowerCase().includes(q))
@@ -37,8 +41,42 @@ export async function searchRecipes(
       const inIngredients = r.extendedIngredients.some((i) =>
         i.name.toLowerCase().includes(q)
       )
-      return inTitle || inSummary || inDiets || inCuisines || inIngredients
+
+      if (inTitle || inSummary || inDiets || inCuisines || inIngredients) {
+        return true
+      }
+
+      // 2. Semantic NLP keyword match
+      if (intent.keywords.length > 0) {
+        const matchesKeyword = intent.keywords.some((kw) =>
+          r.title.toLowerCase().includes(kw) ||
+          r.extendedIngredients.some((i) => i.name.toLowerCase().includes(kw)) ||
+          r.diets.some((d) => d.toLowerCase().includes(kw)) ||
+          r.cuisines?.some((c) => c.toLowerCase().includes(kw))
+        )
+        if (matchesKeyword) return true
+      }
+
+      // 3. Cuisine match
+      if (intent.detectedCuisines.length > 0) {
+        const matchesCuisine = intent.detectedCuisines.some((c) =>
+          r.cuisines?.some((rc) => rc.toLowerCase() === c)
+        )
+        if (matchesCuisine) return true
+      }
+
+      return false
     })
+
+    // Dynamically annotate matching recipes with an explanation
+    if (intent.keywords.length > 0) {
+      results = results.map((r) => ({
+        ...r,
+        matchReason: `AI match: Identified intent for "${intent.keywords.join(', ')}"${
+          intent.inferredDiet ? ` with ${intent.inferredDiet} diet profile` : ''
+        }.`,
+      }))
+    }
   }
 
   if (ingredients.length > 0) {
@@ -70,4 +108,3 @@ export async function searchRecipes(
 
   return results
 }
-

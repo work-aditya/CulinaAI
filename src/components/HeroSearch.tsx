@@ -1,5 +1,5 @@
-import React, { useState } from 'react'
-import { Search, Sparkles, Carrot, SlidersHorizontal, X, Plus } from 'lucide-react'
+import React, { useState, useEffect } from 'react'
+import { Search, Sparkles, Carrot, SlidersHorizontal, X, Plus, History, ArrowRight } from 'lucide-react'
 import { SearchMode } from '../types'
 
 interface HeroSearchProps {
@@ -33,6 +33,27 @@ export const HeroSearch: React.FC<HeroSearchProps> = ({
   onSearch,
 }) => {
   const [ingredientInput, setIngredientInput] = useState('')
+  const [recentSearches, setRecentSearches] = useState<string[]>(() => {
+    try {
+      const saved = localStorage.getItem('culina_recent_searches')
+      return saved ? JSON.parse(saved) : []
+    } catch {
+      return []
+    }
+  })
+
+  useEffect(() => {
+    localStorage.setItem('culina_recent_searches', JSON.stringify(recentSearches))
+  }, [recentSearches])
+
+  const saveRecentSearch = (term: string) => {
+    const trimmed = term.trim()
+    if (!trimmed) return
+    setRecentSearches((prev) => {
+      const filtered = prev.filter((item) => item.toLowerCase() !== trimmed.toLowerCase())
+      return [trimmed, ...filtered].slice(0, 5)
+    })
+  }
 
   const handleAddIngredient = (name: string) => {
     const trimmed = name.trim()
@@ -46,15 +67,34 @@ export const HeroSearch: React.FC<HeroSearchProps> = ({
     setIngredients(ingredients.filter((i) => i !== name))
   }
 
+  const handleSearchTrigger = () => {
+    if (query.trim()) {
+      saveRecentSearch(query)
+    }
+    onSearch()
+  }
+
   const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (e.key === 'Enter') {
       e.preventDefault()
       if (searchMode === 'ingredients' && ingredientInput.trim()) {
         handleAddIngredient(ingredientInput)
       } else {
-        onSearch()
+        handleSearchTrigger()
       }
     }
+  }
+
+  const handleSelectRecent = (term: string) => {
+    setQuery(term)
+    setSearchMode('description')
+    saveRecentSearch(term)
+    onSearch()
+  }
+
+  const removeRecentSearch = (term: string, e: React.MouseEvent) => {
+    e.stopPropagation()
+    setRecentSearches(recentSearches.filter((item) => item !== term))
   }
 
   return (
@@ -145,7 +185,11 @@ export const HeroSearch: React.FC<HeroSearchProps> = ({
                   value={ingredientInput}
                   onChange={(e) => setIngredientInput(e.target.value)}
                   onKeyDown={handleKeyDown}
-                  placeholder={ingredients.length === 0 ? "Type an ingredient (e.g. cauliflower, garlic) and press Enter..." : "Add another ingredient..."}
+                  placeholder={
+                    ingredients.length === 0
+                      ? 'Type an ingredient (e.g. cauliflower, garlic) and press Enter...'
+                      : 'Add another ingredient...'
+                  }
                   className="w-full bg-transparent border-none text-sm text-[#24251F] focus:outline-none placeholder:text-[#77796F]/70 px-2 py-1"
                 />
               </div>
@@ -209,8 +253,8 @@ export const HeroSearch: React.FC<HeroSearchProps> = ({
             )}
             <button
               type="button"
-              onClick={onSearch}
-              className="px-5 py-3 rounded-xl bg-[#557A46] hover:bg-[#456538] text-white text-sm font-semibold transition-colors shadow-sm flex items-center gap-2 shrink-0"
+              onClick={handleSearchTrigger}
+              className="px-5 py-3 rounded-xl bg-[#557A46] hover:bg-[#456538] text-white text-sm font-semibold transition-colors shadow-sm flex items-center gap-2 shrink-0 cursor-pointer"
             >
               <Search className="w-4 h-4" />
               <span>Find Recipes</span>
@@ -218,6 +262,32 @@ export const HeroSearch: React.FC<HeroSearchProps> = ({
           </div>
         )}
       </div>
+
+      {/* Recent Searches */}
+      {recentSearches.length > 0 && searchMode !== 'ingredients' && (
+        <div className="mt-3 flex items-center justify-center gap-2 flex-wrap text-xs text-[#77796F]">
+          <span className="flex items-center gap-1 font-medium text-[#24251F]/60">
+            <History className="w-3.5 h-3.5 text-[#557A46]" /> Recent:
+          </span>
+          {recentSearches.map((term) => (
+            <span
+              key={term}
+              onClick={() => handleSelectRecent(term)}
+              className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-[#24251F]/5 hover:bg-[#557A46]/10 hover:text-[#557A46] text-[#24251F] cursor-pointer transition-colors"
+            >
+              <span>{term}</span>
+              <button
+                type="button"
+                onClick={(e) => removeRecentSearch(term, e)}
+                className="hover:text-red-500"
+                title="Remove search"
+              >
+                <X className="w-3 h-3" />
+              </button>
+            </span>
+          ))}
+        </div>
+      )}
 
       {/* Suggested Inspiration Prompts */}
       <div className="mt-4 flex flex-wrap items-center justify-center gap-2 text-xs text-[#77796F]">
@@ -229,14 +299,16 @@ export const HeroSearch: React.FC<HeroSearchProps> = ({
             onClick={() => {
               setQuery(prompt)
               setSearchMode('description')
+              saveRecentSearch(prompt)
+              onSearch()
             }}
-            className="px-3 py-1 rounded-full bg-white/80 border border-[#24251F]/8 hover:border-[#557A46]/30 hover:bg-[#557A46]/5 hover:text-[#557A46] text-[#24251F] transition-all cursor-pointer"
+            className="px-3 py-1 rounded-full bg-white/80 border border-[#24251F]/8 hover:border-[#557A46]/30 hover:bg-[#557A46]/5 hover:text-[#557A46] text-[#24251F] transition-all cursor-pointer flex items-center gap-1"
           >
-            "{prompt}"
+            <span>"{prompt}"</span>
+            <ArrowRight className="w-3 h-3 opacity-50" />
           </button>
         ))}
       </div>
     </div>
   )
 }
-
