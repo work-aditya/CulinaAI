@@ -1,7 +1,10 @@
 import React, { createContext, useContext, useState, useEffect } from 'react'
 import { Recipe, GroceryItem, Ingredient } from '../types'
+import { supabase, isSupabaseConfigured } from '../lib/supabase'
 
 interface CulinaContextType {
+  user: any
+  setUser: (user: any) => void
   favorites: Recipe[]
   toggleFavorite: (recipe: Recipe) => void
   isFavorite: (id: string | number) => boolean
@@ -15,6 +18,15 @@ interface CulinaContextType {
 const CulinaContext = createContext<CulinaContextType | undefined>(undefined)
 
 export const CulinaProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+  const [user, setUser] = useState<any>(() => {
+    try {
+      const demo = localStorage.getItem('culina_demo_user')
+      return demo ? JSON.parse(demo) : null
+    } catch {
+      return null
+    }
+  })
+
   const [favorites, setFavorites] = useState<Recipe[]>(() => {
     try {
       const saved = localStorage.getItem('culina_favorites')
@@ -33,6 +45,38 @@ export const CulinaProvider: React.FC<{ children: React.ReactNode }> = ({ childr
     }
   })
 
+  // Listen to Supabase Auth state changes
+  useEffect(() => {
+    if (!isSupabaseConfigured) return
+
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      if (session?.user) setUser(session.user)
+    })
+
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange((_event, session) => {
+      setUser(session?.user ?? null)
+    })
+
+    return () => subscription.unsubscribe()
+  }, [])
+
+  // Sync favorites with Supabase if authenticated
+  useEffect(() => {
+    if (user && isSupabaseConfigured && user.id !== 'demo-user-123') {
+      supabase
+        .from('user_favorites')
+        .select('recipe_data')
+        .then(({ data, error }) => {
+          if (!error && data && data.length > 0) {
+            setFavorites(data.map((row: any) => row.recipe_data))
+          }
+        })
+    }
+  }, [user])
+
+  // Save to local storage as continuous fallback
   useEffect(() => {
     localStorage.setItem('culina_favorites', JSON.stringify(favorites))
   }, [favorites])
@@ -41,15 +85,28 @@ export const CulinaProvider: React.FC<{ children: React.ReactNode }> = ({ childr
     localStorage.setItem('culina_grocery_list', JSON.stringify(groceryList))
   }, [groceryList])
 
-  const toggleFavorite = (recipe: Recipe) => {
-    setFavorites((prev) => {
-      const exists = prev.some((r) => r.id === recipe.id)
-      if (exists) {
-        return prev.filter((r) => r.id !== recipe.id)
-      } else {
-        return [...prev, recipe]
+  const toggleFavorite = async (recipe: Recipe) => {
+    const exists = favorites.some((r) => r.id === recipe.id)
+
+    if (exists) {
+      setFavorites((prev) => prev.filter((r) => r.id !== recipe.id))
+      if (user && isSupabaseConfigured && user.id !== 'demo-user-123') {
+        await supabase
+          .from('user_favorites')
+          .delete()
+          .eq('recipe_id', recipe.id)
+          .eq('user_id', user.id)
       }
-    })
+    } else {
+      setFavorites((prev) => [...prev, recipe])
+      if (user && isSupabaseConfigured && user.id !== 'demo-user-123') {
+        await supabase.from('user_favorites').upsert({
+          user_id: user.id,
+          recipe_id: recipe.id,
+          recipe_data: recipe,
+        })
+      }
+    }
   }
 
   const isFavorite = (id: string | number) => {
@@ -67,7 +124,6 @@ export const CulinaProvider: React.FC<{ children: React.ReactNode }> = ({ childr
         )
 
         if (existingIdx >= 0) {
-          // Consolidate quantity
           updated[existingIdx] = {
             ...updated[existingIdx],
             amount: Number((updated[existingIdx].amount + (ing.amount || 1)).toFixed(1)),
@@ -75,7 +131,6 @@ export const CulinaProvider: React.FC<{ children: React.ReactNode }> = ({ childr
             recipeIds: Array.from(new Set([...updated[existingIdx].recipeIds, recipe.id])),
           }
         } else {
-          // Add new consolidated entry
           updated.push({
             id: `${recipe.id}-${ing.id}-${Date.now()}-${Math.random()}`,
             name: ing.name,
@@ -110,6 +165,8 @@ export const CulinaProvider: React.FC<{ children: React.ReactNode }> = ({ childr
   return (
     <CulinaContext.Provider
       value={{
+        user,
+        setUser,
         favorites,
         toggleFavorite,
         isFavorite,
@@ -132,4 +189,3 @@ export function useCulina() {
   }
   return context
 }
-
