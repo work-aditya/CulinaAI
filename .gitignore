@@ -24,7 +24,12 @@ dist-ssr
 *.sw?
 
 *.env
+*.env*
+.env*
+.env.local
 *.agents
+supabase/.temp/
+.temp/
 
 AGENTS.md
 PROJECT_MEMORY.md
