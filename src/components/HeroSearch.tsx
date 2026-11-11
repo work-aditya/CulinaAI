@@ -121,11 +121,10 @@ export const HeroSearch: React.FC<HeroSearchProps> = ({
           <button
             type="button"
             onClick={() => setSearchMode('description')}
-            className={`flex items-center gap-1.5 sm:gap-2 px-3 sm:px-4 py-2 rounded-xl text-xs sm:text-sm font-medium transition-all ${
-              searchMode === 'description'
-                ? 'bg-white text-[#24251F] shadow-xs'
-                : 'text-[#77796F] hover:text-[#24251F]'
-            }`}
+            className={`flex items-center gap-1.5 sm:gap-2 px-3 sm:px-4 py-2 rounded-xl text-xs sm:text-sm font-medium transition-all ${searchMode === 'description'
+              ? 'bg-white text-[#24251F] shadow-xs'
+              : 'text-[#77796F] hover:text-[#24251F]'
+              }`}
           >
             <Sparkles className="w-3.5 h-3.5 text-[#E6A45B] shrink-0" />
             <span className="sm:hidden">Describe</span>
@@ -135,11 +134,10 @@ export const HeroSearch: React.FC<HeroSearchProps> = ({
           <button
             type="button"
             onClick={() => setSearchMode('ingredients')}
-            className={`flex items-center gap-1.5 sm:gap-2 px-3 sm:px-4 py-2 rounded-xl text-xs sm:text-sm font-medium transition-all ${
-              searchMode === 'ingredients'
-                ? 'bg-white text-[#24251F] shadow-xs'
-                : 'text-[#77796F] hover:text-[#24251F]'
-            }`}
+            className={`flex items-center gap-1.5 sm:gap-2 px-3 sm:px-4 py-2 rounded-xl text-xs sm:text-sm font-medium transition-all ${searchMode === 'ingredients'
+              ? 'bg-white text-[#24251F] shadow-xs'
+              : 'text-[#77796F] hover:text-[#24251F]'
+              }`}
           >
             <Carrot className="w-3.5 h-3.5 text-[#557A46] shrink-0" />
             <span className="sm:hidden">Pantry</span>
@@ -149,11 +147,10 @@ export const HeroSearch: React.FC<HeroSearchProps> = ({
           <button
             type="button"
             onClick={() => setSearchMode('dietary')}
-            className={`flex items-center gap-1.5 sm:gap-2 px-3 sm:px-4 py-2 rounded-xl text-xs sm:text-sm font-medium transition-all ${
-              searchMode === 'dietary'
-                ? 'bg-white text-[#24251F] shadow-xs'
-                : 'text-[#77796F] hover:text-[#24251F]'
-            }`}
+            className={`flex items-center gap-1.5 sm:gap-2 px-3 sm:px-4 py-2 rounded-xl text-xs sm:text-sm font-medium transition-all ${searchMode === 'dietary'
+              ? 'bg-white text-[#24251F] shadow-xs'
+              : 'text-[#77796F] hover:text-[#24251F]'
+              }`}
           >
             <SlidersHorizontal className="w-3.5 h-3.5 text-[#557A46] shrink-0" />
             <span className="sm:hidden">Dietary</span>
@@ -219,11 +216,10 @@ export const HeroSearch: React.FC<HeroSearchProps> = ({
                   type="button"
                   onClick={() => handleAddIngredient(item)}
                   disabled={ingredients.includes(item)}
-                  className={`px-2 py-0.5 sm:px-2.5 sm:py-1 rounded-md text-[11px] sm:text-xs transition-colors ${
-                    ingredients.includes(item)
-                      ? 'opacity-40 cursor-not-allowed bg-[#24251F]/5 text-[#77796F]'
-                      : 'bg-[#FAF8F3] hover:bg-[#557A46]/10 hover:text-[#557A46] text-[#24251F]'
-                  }`}
+                  className={`px-2 py-0.5 sm:px-2.5 sm:py-1 rounded-md text-[11px] sm:text-xs transition-colors ${ingredients.includes(item)
+                    ? 'opacity-40 cursor-not-allowed bg-[#24251F]/5 text-[#77796F]'
+                    : 'bg-[#FAF8F3] hover:bg-[#557A46]/10 hover:text-[#557A46] text-[#24251F]'
+                    }`}
                 >
                   + {item}
                 </button>
@@ -242,8 +238,8 @@ export const HeroSearch: React.FC<HeroSearchProps> = ({
               onKeyDown={handleKeyDown}
               placeholder={
                 searchMode === 'dietary'
-                  ? 'E.g., high-protein dinner under 550 cal'
-                  : 'Describe what you want to cook (e.g. garlic pasta)...'
+                  ? 'What type of food do you want to eat'
+                  : 'Describe what you want to cook ?'
               }
               className="flex-1 min-w-0 bg-transparent border-none text-xs sm:text-sm md:text-base text-[#24251F] placeholder:text-[#77796F]/70 focus:outline-none px-1.5 sm:px-2 py-2 sm:py-3"
             />

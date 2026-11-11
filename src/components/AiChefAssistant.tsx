@@ -17,6 +17,7 @@ import { Recipe } from '../types'
 import { INITIAL_RECIPES } from '../data/mockRecipes'
 import { parseNaturalLanguageQuery } from '../lib/nlp'
 import { useCulina } from '../context/CulinaContext'
+import { supabase, isSupabaseConfigured } from '../lib/supabase'
 
 interface Message {
   id: string
@@ -36,10 +37,19 @@ const STARTER_PROMPTS = [
 
 interface AiChefAssistantProps {
   onSelectRecipe: (recipe: Recipe) => void
+  isOpen?: boolean
+  setIsOpen?: (open: boolean) => void
 }
 
-export const AiChefAssistant: React.FC<AiChefAssistantProps> = ({ onSelectRecipe }) => {
-  const [isOpen, setIsOpen] = useState(false)
+export const AiChefAssistant: React.FC<AiChefAssistantProps> = ({
+  onSelectRecipe,
+  isOpen: externalIsOpen,
+  setIsOpen: externalSetIsOpen,
+}) => {
+  const [internalIsOpen, setInternalIsOpen] = useState(false)
+  const isOpen = externalIsOpen !== undefined ? externalIsOpen : internalIsOpen
+  const setIsOpen = externalSetIsOpen || setInternalIsOpen
+
   const [input, setInput] = useState('')
   const [isTyping, setIsTyping] = useState(false)
   const messagesEndRef = useRef<HTMLDivElement>(null)
@@ -49,7 +59,7 @@ export const AiChefAssistant: React.FC<AiChefAssistantProps> = ({ onSelectRecipe
     {
       id: 'welcome',
       sender: 'ai',
-      text: "Hello Chef! 👋 I'm your AI Culinary Assistant. Tell me what you're in the mood for, what ingredients you have, or any dietary goals (e.g. 'I want a comforting dinner with mushrooms in under 30 minutes'), and I'll recommend the ideal recipe.",
+      text: "Hello Chef! 👋 I'm your AI Culinary Assistant. Tell me what you're in the mood for, what ingredients you have, or any dietary goals , and I'll recommend the ideal recipe.",
       timestamp: new Date(),
     },
   ])
@@ -64,7 +74,7 @@ export const AiChefAssistant: React.FC<AiChefAssistantProps> = ({ onSelectRecipe
     }
   }, [messages, isOpen])
 
-  const handleSend = (textToSend?: string) => {
+  const handleSend = async (textToSend?: string) => {
     const query = (textToSend || input).trim()
     if (!query) return
 
@@ -79,7 +89,36 @@ export const AiChefAssistant: React.FC<AiChefAssistantProps> = ({ onSelectRecipe
     setInput('')
     setIsTyping(true)
 
-    // Simulate intelligent culinary reasoning & match search
+    // 1. Try Live Supabase Edge Function (OpenAI + pgvector RAG)
+    if (isSupabaseConfigured) {
+      try {
+        const { data, error } = await supabase.functions.invoke('ai-chef', {
+          body: {
+            prompt: query,
+            history: messages.slice(-4),
+          },
+        })
+
+        if (!error && data?.message) {
+          const aiMessage: Message = {
+            id: `ai-${Date.now()}`,
+            sender: 'ai',
+            text: data.message,
+            suggestedRecipes: data.suggestedRecipes && data.suggestedRecipes.length > 0
+              ? data.suggestedRecipes
+              : INITIAL_RECIPES.slice(0, 2),
+            timestamp: new Date(),
+          }
+          setMessages((prev) => [...prev, aiMessage])
+          setIsTyping(false)
+          return
+        }
+      } catch {
+        // Fall back gracefully to local intelligence
+      }
+    }
+
+    // 2. Client-Side NLP Fallback Engine
     setTimeout(() => {
       const intent = parseNaturalLanguageQuery(query)
       const q = query.toLowerCase()
@@ -113,7 +152,7 @@ export const AiChefAssistant: React.FC<AiChefAssistantProps> = ({ onSelectRecipe
         // 5. Inferred diet match
         if (intent.inferredDiet) {
           if (recipe.diets.some((d) => d.toLowerCase() === intent.inferredDiet)) score += 6
-          else score -= 4 // penalize if requested diet isn't satisfied
+          else score -= 4
         }
 
         // 6. Inferred time constraint match
@@ -140,7 +179,6 @@ export const AiChefAssistant: React.FC<AiChefAssistantProps> = ({ onSelectRecipe
           aiResponseText = `Here is my top recommendation for you based on "${query}":`
         }
       } else {
-        // Fallback to 2 diverse popular recipes
         topMatches.push(INITIAL_RECIPES[0], INITIAL_RECIPES[4])
         aiResponseText = `I couldn't find an exact match for "${query}", but here are two top-rated recipes that might inspire you:`
       }
@@ -155,7 +193,7 @@ export const AiChefAssistant: React.FC<AiChefAssistantProps> = ({ onSelectRecipe
 
       setMessages((prev) => [...prev, aiMessage])
       setIsTyping(false)
-    }, 600)
+    }, 500)
   }
 
   const handleClearHistory = () => {
@@ -252,11 +290,10 @@ export const AiChefAssistant: React.FC<AiChefAssistantProps> = ({ onSelectRecipe
                   )}
 
                   <div
-                    className={`max-w-[85%] rounded-2xl p-4 text-xs sm:text-sm leading-relaxed ${
-                      msg.sender === 'user'
+                    className={`max-w-[85%] rounded-2xl p-4 text-xs sm:text-sm leading-relaxed ${msg.sender === 'user'
                         ? 'bg-[#557A46] text-white shadow-xs rounded-tr-xs'
                         : 'bg-white border border-[#24251F]/8 text-[#24251F] shadow-xs rounded-tl-xs'
-                    }`}
+                      }`}
                   >
                     <p className="whitespace-pre-line">{msg.text}</p>
 
@@ -321,11 +358,10 @@ export const AiChefAssistant: React.FC<AiChefAssistantProps> = ({ onSelectRecipe
                                     <button
                                       type="button"
                                       onClick={() => addRecipeToGroceryList(recipe)}
-                                      className={`p-1.5 rounded-md transition-colors ${
-                                        inGrocery
+                                      className={`p-1.5 rounded-md transition-colors ${inGrocery
                                           ? 'bg-[#557A46] text-white'
                                           : 'bg-white text-[#24251F] hover:bg-[#557A46]/10'
-                                      }`}
+                                        }`}
                                       title={inGrocery ? 'In Grocery List' : 'Add ingredients to Grocery List'}
                                     >
                                       {inGrocery ? (
@@ -338,17 +374,15 @@ export const AiChefAssistant: React.FC<AiChefAssistantProps> = ({ onSelectRecipe
                                     <button
                                       type="button"
                                       onClick={() => toggleFavorite(recipe)}
-                                      className={`p-1.5 rounded-md transition-colors ${
-                                        favorited
+                                      className={`p-1.5 rounded-md transition-colors ${favorited
                                           ? 'bg-white text-[#557A46]'
                                           : 'bg-white text-[#77796F] hover:text-[#557A46]'
-                                      }`}
+                                        }`}
                                       title={favorited ? 'Saved in cookbook' : 'Save recipe'}
                                     >
                                       <Heart
-                                        className={`w-3.5 h-3.5 ${
-                                          favorited ? 'fill-[#557A46]' : ''
-                                        }`}
+                                        className={`w-3.5 h-3.5 ${favorited ? 'fill-[#557A46]' : ''
+                                          }`}
                                       />
                                     </button>
                                   </div>

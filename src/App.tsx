@@ -11,10 +11,11 @@ import { UtensilsCrossed, ShieldCheck, Heart } from 'lucide-react'
 
 export const App: React.FC = () => {
   const [activeRecipe, setActiveRecipe] = useState<Recipe | null>(null)
+  const [isAiChefOpen, setIsAiChefOpen] = useState(false)
 
   return (
     <div className="min-h-screen flex flex-col bg-[#FAF8F3] text-[#24251F] w-full max-w-full overflow-x-hidden">
-      <Navbar />
+      <Navbar onOpenAi={() => setIsAiChefOpen(true)} />
 
       <div className="flex-1">
         <Routes>
@@ -24,8 +25,12 @@ export const App: React.FC = () => {
         </Routes>
       </div>
 
-      {/* Floating AI Sous Chef Assistant */}
-      <AiChefAssistant onSelectRecipe={(recipe) => setActiveRecipe(recipe)} />
+      {/* AI Sous Chef Assistant Drawer & Trigger */}
+      <AiChefAssistant
+        isOpen={isAiChefOpen}
+        setIsOpen={setIsAiChefOpen}
+        onSelectRecipe={(recipe) => setActiveRecipe(recipe)}
+      />
 
       {/* Global Recipe Detail Modal for AI Assistant Trigger */}
       <RecipeDetailModal
