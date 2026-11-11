@@ -17,32 +17,32 @@ export const Navbar: React.FC = () => {
 
   return (
     <>
-      <header className="sticky top-0 z-40 bg-[#FAF8F3]/90 backdrop-blur-md border-b border-[#24251F]/8">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-20 flex items-center justify-between">
+      <header className="sticky top-0 z-40 bg-[#FAF8F3]/95 backdrop-blur-md border-b border-[#24251F]/8 w-full max-w-full">
+        <div className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 h-16 sm:h-20 flex items-center justify-between gap-2">
           {/* Brand Logo */}
-          <Link to="/" className="flex items-center gap-3 group">
-            <div className="w-10 h-10 rounded-xl bg-[#557A46] text-white flex items-center justify-center shadow-sm transition-transform duration-200 group-hover:scale-105">
-              <UtensilsCrossed className="w-5 h-5 text-[#FAF8F3]" />
+          <Link to="/" className="flex items-center gap-2 sm:gap-3 group shrink-0 min-w-0">
+            <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-xl bg-[#557A46] text-white flex items-center justify-center shadow-xs transition-transform duration-200 group-hover:scale-105 shrink-0">
+              <UtensilsCrossed className="w-4 h-4 sm:w-5 sm:h-5 text-[#FAF8F3]" />
             </div>
-            <div className="flex flex-col">
+            <div className="flex flex-col min-w-0">
               <div className="flex items-center gap-1.5">
-                <span className="font-editorial text-2xl font-bold tracking-tight text-[#24251F]">
+                <span className="font-editorial text-xl sm:text-2xl font-bold tracking-tight text-[#24251F] leading-none">
                   Culina<span className="text-[#557A46]">AI</span>
                 </span>
-                <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-full text-[10px] font-medium bg-[#E6A45B]/15 text-[#24251F]">
+                <span className="hidden sm:inline-flex items-center gap-1 px-1.5 py-0.5 rounded-full text-[10px] font-medium bg-[#E6A45B]/15 text-[#24251F]">
                   <Sparkles className="w-2.5 h-2.5 text-[#E6A45B]" />
                   Smart
                 </span>
               </div>
-              <span className="text-[11px] font-medium text-[#77796F] tracking-wide uppercase">
+              <span className="hidden md:block text-[11px] font-medium text-[#77796F] tracking-wide uppercase truncate mt-0.5">
                 Think Ingredients. Discover Recipes.
               </span>
             </div>
           </Link>
 
           {/* Navigation Links & User Action */}
-          <div className="flex items-center gap-2 sm:gap-3">
-            <nav className="flex items-center gap-1 sm:gap-2">
+          <div className="flex items-center gap-1 sm:gap-3 shrink-0">
+            <nav className="flex items-center gap-0.5 sm:gap-1.5">
               {navLinks.map((link) => {
                 const Icon = link.icon
                 const isActive = location.pathname === link.to
@@ -51,17 +51,18 @@ export const Navbar: React.FC = () => {
                   <Link
                     key={link.to}
                     to={link.to}
-                    className={`relative flex items-center gap-2 px-3.5 py-2 rounded-lg text-sm font-medium transition-colors ${
+                    className={`relative flex items-center gap-1.5 px-2.5 py-1.5 sm:px-3.5 sm:py-2 rounded-lg text-xs sm:text-sm font-medium transition-colors ${
                       isActive
                         ? 'bg-[#557A46]/10 text-[#557A46]'
                         : 'text-[#24251F]/80 hover:text-[#24251F] hover:bg-[#24251F]/5'
                     }`}
+                    title={link.label}
                   >
-                    <Icon className={`w-4 h-4 ${isActive ? 'text-[#557A46]' : 'text-[#77796F]'}`} />
-                    <span className="hidden sm:inline">{link.label}</span>
+                    <Icon className={`w-4 h-4 shrink-0 ${isActive ? 'text-[#557A46]' : 'text-[#77796F]'}`} />
+                    <span className="hidden md:inline">{link.label}</span>
                     {link.count !== undefined && link.count > 0 && (
                       <span
-                        className={`ml-1 px-1.5 py-0.2 rounded-full text-[11px] font-semibold ${
+                        className={`px-1.5 py-0.2 rounded-full text-[10px] sm:text-[11px] font-semibold ${
                           isActive ? 'bg-[#557A46] text-white' : 'bg-[#24251F]/10 text-[#24251F]'
                         }`}
                       >
@@ -73,20 +74,20 @@ export const Navbar: React.FC = () => {
               })}
             </nav>
 
-            <div className="w-px h-6 bg-[#24251F]/10 mx-1 hidden sm:block" />
+            <div className="w-px h-5 sm:h-6 bg-[#24251F]/10 mx-0.5 sm:mx-1" />
 
             {/* Auth Button */}
             <button
               type="button"
               onClick={() => setIsAuthOpen(true)}
-              className="flex items-center gap-2 px-3 py-2 rounded-xl text-xs font-semibold bg-white border border-[#24251F]/10 text-[#24251F] hover:bg-[#FAF8F3] hover:border-[#557A46]/40 transition-colors shadow-2xs"
+              className="flex items-center gap-1.5 px-2.5 py-1.5 sm:px-3 sm:py-2 rounded-xl text-xs font-semibold bg-white border border-[#24251F]/10 text-[#24251F] hover:bg-[#FAF8F3] hover:border-[#557A46]/40 transition-colors shadow-2xs shrink-0"
             >
               {user ? (
                 <>
                   <div className="w-5 h-5 rounded-full bg-[#557A46] text-white flex items-center justify-center text-[10px]">
                     <User className="w-3 h-3" />
                   </div>
-                  <span className="hidden md:inline max-w-[120px] truncate">
+                  <span className="hidden sm:inline max-w-[100px] truncate">
                     {user.email?.split('@')[0] || 'Chef'}
                   </span>
                 </>

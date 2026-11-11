@@ -172,19 +172,19 @@ export const AiChefAssistant: React.FC<AiChefAssistantProps> = ({ onSelectRecipe
   return (
     <>
       {/* Floating Trigger Button (Bottom-Right) */}
-      <div className="fixed bottom-6 right-6 z-40">
+      <div className="fixed bottom-4 right-4 sm:bottom-6 sm:right-6 z-40">
         <button
           type="button"
           onClick={() => setIsOpen(true)}
-          className="group relative flex items-center gap-2.5 px-4 py-3 rounded-full bg-[#557A46] text-white shadow-xl hover:bg-[#456538] hover:shadow-2xl transition-all duration-300 active:scale-95 cursor-pointer"
+          className="group relative flex items-center gap-2 sm:gap-2.5 px-3.5 sm:px-4 py-2.5 sm:py-3 rounded-full bg-[#557A46] text-white shadow-xl hover:bg-[#456538] hover:shadow-2xl transition-all duration-300 active:scale-95 cursor-pointer"
         >
-          <div className="w-8 h-8 rounded-full bg-white/20 flex items-center justify-center">
-            <ChefHat className="w-4 h-4 text-[#FAF8F3]" />
+          <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-white/20 flex items-center justify-center">
+            <ChefHat className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-[#FAF8F3]" />
           </div>
-          <span className="font-editorial text-sm font-semibold tracking-wide pr-1">
-            Ask AI Sous Chef
+          <span className="font-editorial text-xs sm:text-sm font-semibold tracking-wide pr-1">
+            <span className="hidden sm:inline">Ask </span>AI Sous Chef
           </span>
-          <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold bg-[#E6A45B] text-[#24251F]">
+          <span className="inline-flex items-center gap-0.5 sm:gap-1 px-1.5 sm:px-2 py-0.5 rounded-full text-[9px] sm:text-[10px] font-bold bg-[#E6A45B] text-[#24251F]">
             <Sparkles className="w-2.5 h-2.5" />
             AI
           </span>

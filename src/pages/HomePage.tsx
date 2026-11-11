@@ -27,9 +27,9 @@ export const HomePage: React.FC = () => {
   })
 
   return (
-    <div className="min-h-screen pb-20">
+    <div className="min-h-screen pb-20 w-full max-w-full overflow-hidden">
       {/* Visual Focus: Hero Search Section */}
-      <section className="border-b border-[#24251F]/6 bg-gradient-to-b from-[#FAF8F3] via-white to-[#FAF8F3]">
+      <section className="border-b border-[#24251F]/6 bg-gradient-to-b from-[#FAF8F3] via-white to-[#FAF8F3] w-full max-w-full overflow-hidden">
         <HeroSearch
           searchMode={searchMode}
           setSearchMode={setSearchMode}
@@ -44,7 +44,7 @@ export const HomePage: React.FC = () => {
       </section>
 
       {/* Results Section */}
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-10">
+      <main className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 pt-8 sm:pt-10 w-full max-w-full">
         <div className="flex items-center justify-between mb-8 pb-4 border-b border-[#24251F]/8">
           <div>
             <div className="flex items-center gap-2">

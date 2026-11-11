@@ -13,7 +13,7 @@ export const App: React.FC = () => {
   const [activeRecipe, setActiveRecipe] = useState<Recipe | null>(null)
 
   return (
-    <div className="min-h-screen flex flex-col bg-[#FAF8F3] text-[#24251F]">
+    <div className="min-h-screen flex flex-col bg-[#FAF8F3] text-[#24251F] w-full max-w-full overflow-x-hidden">
       <Navbar />
 
       <div className="flex-1">
